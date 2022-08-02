@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="">
+  
+<head>
+  <title>Table of Contents</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+  <meta name="description" content="Table of Contents">
+  <meta name="keywords" content="HTML, JavaScript">
+  <meta name="author" content="Christian Langrock">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+ul, #myUL {
+  list-style-type: none;
+}
+
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+.caret {
+  cursor: pointer;
+  -webkit-user-select: none; /* Safari 3.1+ */
+  -moz-user-select: none; /* Firefox 2+ */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none;
+}
+
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+  background-color: rgb(228, 228, 228);
+}
+
+.caret-down::before {
+  -ms-transform: rotate(90deg); /* IE 9 */
+  -webkit-transform: rotate(90deg); /* Safari */
+  transform: rotate(90deg);  
+  color: black;
+  background-color: rgb(221, 252, 221);
+}
+
+.nested {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+.FileStyle{
+  color:darkblue;
+}
+
+.ImageLogo{
+  float: right;
+  max-width: 35%;
+}
+
+</style>
+</head>
+<body>
+  <header>
+    <img src="./.images/01_Actemium%20Logo_FULL%20COLOR.jpg" class="ImageLogo" alt="Actemium Logo" /> 
+    <h1>Table of Contents</h1>   
+    <h2>Software Release DFF </h2>
+    
+    <p>
+      Published by:
+      <ul> 
+        <li>Christian Langrock</li>
+        <li>Email:<E-Mail>Christian.Langrock@actemium.de</E-Mail></li>
+        <li>Actemium Controlmatic Mitte GmbH</li>
+        <li>Industriestr. 70</li>
+        <li>04435 Schkeuditz</li>
+        <li>Germany</li>
+      </ul>
+  </header> 
+  <h2>Released files</h2>
+  <h3>DF Release V1.10 </h3>
+  <p>Release date: [CreationDateHTML] </p>
+
+[FinalHTML]
+
+
+<script>
+
+  var toggler = document.getElementsByClassName("caret");
+  var i;
+  
+  for (i = 0; i < toggler.length; i++) {
+    toggler[i].addEventListener("click", function() {
+      this.parentElement.querySelector(".nested").classList.toggle("active");
+      this.classList.toggle("caret-down");
+    });
+  }
+  </script>
+  
+</body>
+</html>
