@@ -1,5 +1,5 @@
 # Script Version
-# $sScriptVersion = "0.10"
+# $sScriptVersion = "0.20"
 
 # Set Error Action to Silently Continue
 $ErrorActionPreference =  "SilentlyContinue"
@@ -26,11 +26,15 @@ $startFolder = Get-SHDOpenFolderDialog -Title "Select the root folder for the Ta
 
 # define the output file
 # The final html file that will be produced, #does not need to exist
-$OutputFileName ="TableOfContent.html"
-$destinationHTMLFile = Join-Path -Path $startFolder -ChildPath $OutputFileName
+$OutputFileName ="Inhaltsverzeichnis.html"
+$OutputfolderTableofContent ="00 Inhaltsverzeichnis"
+$destinationHTMLFolder = Join-Path -Path $startFolder -ChildPath $OutputfolderTableofContent
+$destinationHTMLFile = Join-Path -Path $destinationHTMLFolder  -ChildPath $OutputFileName
 
 # define image folder
 $imageSourceFolder = Join-Path -Path $scriptFolder -ChildPath '.images'
+$imageDestinationFolder = Join-Path -Path $destinationHTMLFolder -ChildPath '.images'
+
 
 # message box if calculate the hash 
 $msgBoxInput =  [System.Windows.MessageBox]::Show('Soll der Hash Wert ermittelt werden?', 'Mit Hash Wert?', 'YesNo','Info')
@@ -162,7 +166,8 @@ function Convert-FileDataToHTML {
         $FileLink = Resolve-Path -Path $dataFile.Fullname -Relative
         # convert to HTML link
         $FileLink = $FileLink.Replace("\","/").Replace(" ", "%20")
-        $HTMLOutput = '<li><a href="' + $FileLink +'">' + $($dataFile.FileName) + '</a> <span class= FileStyle>  </span>' + "`n" +
+        # $HTMLOutput = '<li><a href="' + $FileLink +'">' + $($dataFile.FileName) + '</a> <span class= FileStyle>  </span>' + "`n" +
+        $HTMLOutput = '<li><a href="../' + $FileLink +'">' + $($dataFile.FileName) + '</a> <span class= FileStyle>  </span>' + "`n" +
         '<ul>' + "`n" +
                 '<li> &ensp; [<span style="color:grey"> Last Write Date: </span>] &ensp; (<span style="color:blue">' + $dateFormat + '</span>)</li>' + "`n" + 
                 '<li> &ensp; [<span style="color:grey"> File Size: </span>] &emsp; &emsp; &emsp;(<span style="color:blue">' + $($dataFile.Size) +' ' + $($dataFile.Units) + '</span>)</li>' + "`n"  
@@ -246,9 +251,10 @@ function GetAllFolderDetails{
 
 Set-Location -Path $startFolder
 
-# delete the HtmlFile
-Remove-Item -Path $destinationHTMLFile -Force
-Remove-Item -Path .\.images\ -Force -Recurse
+# delete old files
+ Remove-Item -Path $destinationHTMLFile -Force
+ New-Item $destinationHTMLFile -Type File
+ Remove-Item -Path $imageDestinationFolder -Force -Recurse
 #Opening html
 $htmlLines += '<ul id="myUL">'+ "`n"
 
@@ -262,13 +268,16 @@ $htmlLines += '</ul>'
 $DateNow = Get-Date
 $creationDate = $DateNow.tostring("dd-MMM-yyyy")
 
+# delete the dummy html file
+Remove-Item -Path $destinationHTMLFile -Force
+
 #Get the html template, replace the template with generated code and write to the final html file
 $sourceHTML = Get-Content -Path $sourceHTMLFile;
 $destinationHTML = $sourceHTML.Replace('[FinalHTML]', $htmlLines).Replace('[CreationDateHTML]', $creationDate) 
 $destinationHTML | Set-Content $destinationHTMLFile -encoding utf8
 
 # copy image folder to destination
-Copy-Item -Path $imageSourceFolder -Destination $startFolder -Recurse -Force
-Set-ItemProperty .\.images\ Attributes -Value "Hidden"
+Copy-Item -Path $imageSourceFolder -Destination $destinationHTMLFolder -Recurse -Force
+Set-ItemProperty $imageDestinationFolder Attributes -Value "Hidden"
 
 Start-Process ((Resolve-Path "$destinationHTMLFile").Path)
