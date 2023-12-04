@@ -1,5 +1,5 @@
 # Script Version
-# $sScriptVersion = "0.20"
+# $sScriptVersion = "0.30"
 
 # Set Error Action to Silently Continue
 $ErrorActionPreference =  "SilentlyContinue"
@@ -35,12 +35,25 @@ $destinationHTMLFile = Join-Path -Path $destinationHTMLFolder  -ChildPath $Outpu
 $imageSourceFolder = Join-Path -Path $scriptFolder -ChildPath '.images'
 $imageDestinationFolder = Join-Path -Path $destinationHTMLFolder -ChildPath '.images'
 
+# message box if calculate the hash 
+$msgBoxInputSize =  [System.Windows.MessageBox]::Show('Soll die Größe der Dateien ermittelt werden?', 'Mit Dateigröße', 'YesNo','Info')
+
+[bool]$SizeOff = $false
+switch  ($msgBoxInputSize) {
+    'Yes' {
+    	$SizeOff = $false
+    }
+    'No' {
+    	$SizeOff = $true
+    }
+}
+
 
 # message box if calculate the hash 
-$msgBoxInput =  [System.Windows.MessageBox]::Show('Soll der Hash Wert ermittelt werden?', 'Mit Hash Wert?', 'YesNo','Info')
+$msgBoxInputHash =  [System.Windows.MessageBox]::Show('Soll der Hash Wert ermittelt werden?', 'Mit Hash Wert?', 'YesNo','Info')
 
 [bool]$HashOff = $false
-switch  ($msgBoxInput) {
+switch  ($msgBoxInputHash) {
     'Yes' {
     	$HashOff = $false
     }
@@ -48,6 +61,8 @@ switch  ($msgBoxInput) {
     	$HashOff = $true
     }
 }
+
+
 
 
 $htmlLines = @()
@@ -166,14 +181,15 @@ function Convert-FileDataToHTML {
         $FileLink = Resolve-Path -Path $dataFile.Fullname -Relative
         # convert to HTML link
         $FileLink = $FileLink.Replace("\","/").Replace(" ", "%20")
-        # $HTMLOutput = '<li><a href="' + $FileLink +'">' + $($dataFile.FileName) + '</a> <span class= FileStyle>  </span>' + "`n" +
         $HTMLOutput = '<li><a href="../' + $FileLink +'">' + $($dataFile.FileName) + '</a> <span class= FileStyle>  </span>' + "`n" +
         '<ul>' + "`n" +
-                '<li> &ensp; [<span style="color:grey"> Last Write Date: </span>] &ensp; (<span style="color:blue">' + $dateFormat + '</span>)</li>' + "`n" + 
-                '<li> &ensp; [<span style="color:grey"> File Size: </span>] &emsp; &emsp; &emsp;(<span style="color:blue">' + $($dataFile.Size) +' ' + $($dataFile.Units) + '</span>)</li>' + "`n"  
-                if (!$HashOff){ 
-                    $HTMLOutput = $HTMLOutput + ' <li> &ensp; [<span style="color:grey"> File Hash: </span>] &emsp; &emsp; &ensp; (<span style="color:blue">' + $($dataFile.Hash) + '</span>)</li>' + "`n"
+                '<li> &ensp; [<span style="color:grey"> Änderungsdatum: </span>] &ensp; (<span style="color:blue">' + $dateFormat + '</span>)</li>' + "`n" 
+               if (!$SizeOff){
+                  $HTMLOutput = $HTMLOutput + '<li> &ensp; [<span style="color:grey"> Dateigröße: </span>] &emsp; &emsp; &emsp;(<span style="color:blue">' + $($dataFile.Size) +' ' + $($dataFile.Units) + '</span>)</li>' + "`n"  
                 }
+               if (!$HashOff){ 
+                    $HTMLOutput = $HTMLOutput + ' <li> &ensp; [<span style="color:grey"> File Hash: </span>] &emsp; &emsp; &ensp; (<span style="color:blue">' + $($dataFile.Hash) + '</span>)</li>' + "`n"
+               }
                 $HTMLOutput = $HTMLOutput +'</ul>' + "`n" + '</li>' + "`n"    
     }
     
@@ -196,7 +212,13 @@ function GetAllFolderDetails{
     #If has subfolders, create hmtl drilldown. 
     if($subFolders.Count -gt 0)
     {
-        $recursiveHTML += '<li><span class="caret">' + $folderItem.Name + '(<span style="color:red">' + $folderDetails.FolderSizeInUnits + " " + $folderDetails.Units + '</span>)</span>' + "`n"
+        $recursiveHTML += '<li><span class="caret">' + $folderItem.Name
+          if (!$SizeOff){
+            $recursiveHTML += '(<span style="color:red">' + $folderDetails.FolderSizeInUnits + " " + $folderDetails.Units + '</span>)</span>' + "`n"
+          }
+          else{
+            $recursiveHTML += '</span>' + "`n"
+          }
         $recursiveHTML += '<ul class="nested">'
         #Get all file data in subfolder
         $files = Get-ChildItem -Path $folderItem.FullName -File| Select-Object Name,FullName
@@ -214,7 +236,13 @@ function GetAllFolderDetails{
     }
     else
     {
-        $recursiveHTML += '<li><span class="caret">' + $folderItem.Name + ' (<span style="color:red">' + $folderDetails.FolderSizeInUnits + " " + $folderDetails.Units + '</span>)</span>' + "`n"
+        $recursiveHTML += '<li><span class="caret">' + $folderItem.Name 
+        if (!$SizeOff){
+          $recursiveHTML += ' (<span style="color:red">' + $folderDetails.FolderSizeInUnits + " " + $folderDetails.Units + '</span>)</span>' + "`n"
+         }
+         else{
+         $recursiveHTML += '</span>' + "`n"
+         }
         $recursiveHTML += '<ul class="nested">'
         # Get all file data in subfolder
         $files = Get-ChildItem -Path $folderItem -File| Select-Object Name,FullName 
